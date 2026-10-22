@@ -1,0 +1,289 @@
+=========================================
+v_05 final run (Debian, relative paths)
+=========================================
+root : /home/js/HI_LAB/dengue_project
+py   : venv/bin/python (Python 3.11.2)
+final: v_05/v_05_ouput_final_run
+
+=== 01_data_ingestion ===
++ venv/bin/python v_05/01_data_ingestion.py
+Loading district covariates from: /home/js/HI_LAB/dengue_project/v_05/inputs/district_covariates.csv
+Districts validated: 77 / 77 canonical districts
+Saved validated covariates to: /home/js/HI_LAB/dengue_project/v_05/outputs/district_covariates.csv
+v_05 Data Ingestion Report
+==========================
+Input file    : /home/js/HI_LAB/dengue_project/v_05/inputs/district_covariates.csv
+Districts     : 77 canonical districts
+Columns       : ['district', 'province', 'population', 'area_km2', 'urbanization_pct', 'population_density', 'health_facility_per100k']
+Province      : ['BAGMATI', 'GANDAKI', 'KARNALI', 'KOSHI', 'LUMBINI', 'MADHESH', 'SUDURPASHCHIM']
+Urbanization  : mean=30.96, 
+                min=0.00, 
+                max=100.00
+Population density: mean=352.06, 
+                min=2.52,
+                max=5168.57
+Health fac/100k: mean=47.91,
+              min=14.50,
+              max=318.10
+
+
+✓ Data ingestion complete.
+OK: 01_data_ingestion
+
+=== 02_spatial_clustering ===
++ venv/bin/python v_05/02_spatial_clustering.py
+Loading district covariates from: /home/js/HI_LAB/dengue_project/v_05/inputs/district_covariates.csv
+
+Computing silhouette scores for k=2,3,4,5...
+k=2: Silhouette=0.7730, CH=43.1, DB=0.3304
+k=3: Silhouette=0.4661, CH=55.4, DB=0.6623
+k=4: Silhouette=0.4995, CH=102.4, DB=0.4924
+k=5: Silhouette=0.4136, CH=121.7, DB=0.5804
+
+=== Cluster Composition ===
+
+Cluster 1 — Urban / High Surveillance (n=2)
+  Urbanization (mean): 100.0%
+  Health fac/100k (mean): 38.30
+  Pop density (mean): 4400.0 /km²
+  Districts: BHAKTAPUR, KATHMANDU
+
+Cluster 2 — Peri-urban / Mid Surveillance (n=24)
+  Urbanization (mean): 51.8%
+  Health fac/100k (mean): 23.47
+  Pop density (mean): 502.5 /km²
+  Districts: BANKE, BARA, BARDIYA, CHITAWAN, DANG, DHANUSA, JHAPA, KAILALI, KANCHANPUR, KAPILBASTU, KASKI, LALITPUR, MAHOTTARI, MAKWANPUR, MORANG, NAWALPARASI EAST, NAWALPARASI WEST, PARSA, RAUTAHAT, RUPANDEHI, SAPTARI, SARLAHI, SUNSARI, SURKHET
+
+Cluster 3 — Rural / Low Surveillance (n=51)
+  Urbanization (mean): 18.4%
+  Health fac/100k (mean): 59.79
+  Pop density (mean): 122.5 /km²
+  Districts: ACHHAM, ARGHAKHANCHI, BAGLUNG, BAITADI, BAJHANG, BAJURA, BHOJPUR, DADELDHURA, DAILEKH, DARCHULA, DHADING, DHANKUTA, DOLAKHA, DOLPA, DOTI, GORKHA, GULMI, HUMLA, ILAM, JAJARKOT, JUMLA, KALIKOT, KAVREPALANCHOK, KHOTANG, LAMJUNG, MANANG, MUGU, MUSTANG, MYAGDI, NUWAKOT, OKHALDHUNGA, PALPA, PANCHTHAR, PARBAT, PYUTHAN, RAMECHHAP, RASUWA, ROLPA, RUKUM EAST, RUKUM WEST, SALYAN, SANKHUWASABHA, SINDHULI, SINDHUPALCHOK, SIRAHA, SOLUKHUMBU, SYANGJA, TANAHU, TAPLEJUNG, TERHATHUM, UDAYAPUR
+
+=== Bias Parameter Summary ===
+Cluster 1: B1 mean=0.85 | B2 lag mean=1.0d | B3 mean=0.75
+Cluster 2: B1 mean=0.60 | B2 lag mean=5.0d | B3 mean=0.50
+Cluster 3: B1 mean=0.35 | B2 lag mean=14.0d | B3 mean=0.25
+
+Saved: /home/js/HI_LAB/dengue_project/v_05/outputs/district_clusters.csv
+Saved: /home/js/HI_LAB/dengue_project/v_05/outputs/bias_parameters.csv
+Saved: /home/js/HI_LAB/dengue_project/v_05/figures/cluster_summary.csv
+Saved: /home/js/HI_LAB/dengue_project/v_05/figures/cluster_scores.png
+Saved: /home/js/HI_LAB/dengue_project/v_05/figures/cluster_3d_scatter.png
+
+✓ Spatial clustering complete.
+OK: 02_spatial_clustering
+
+=== 03_case_count_ingestion ===
++ venv/bin/python v_05/03_case_count_ingestion.py
+Found 170 files: 2022-01-31.csv → 2025-12-07.csv
+
+Schema counts: {'simple': 162, 'wide': 8}
+Panel shape (raw): (13090, 4)
+Unique districts (raw): 77
+Date range: 2022-01-31 → 2025-12-07
+Panel shape (canonical): (13090, 4)
+Excluded by choice: ['KASKI'] (77 -> 76 districts in panel)
+Injected 304 synthetic Jan-1 zero snapshots (4 years x 76 districts)
+
+Incident derivation complete.
+Total incident cases across panel: 138,595
+Interval length stats (days): min=0, max=36, median=2
+
+Saved: /home/js/HI_LAB/dengue_project/v_05/outputs/panel_cumulative.csv
+            date  year  district  ...  incident  prev_date  interval_days
+1     2022-01-31  2022    ACHHAM  ...         0 2022-01-01             30
+2     2022-02-28  2022    ACHHAM  ...         0 2022-01-31             28
+3     2022-03-31  2022    ACHHAM  ...         0 2022-02-28             31
+4     2022-04-30  2022    ACHHAM  ...         0 2022-03-31             30
+5     2022-05-31  2022    ACHHAM  ...         1 2022-04-30             31
+...          ...   ...       ...  ...       ...        ...            ...
+13219 2025-11-09  2025  UDAYAPUR  ...         0 2025-11-02              7
+13220 2025-11-16  2025  UDAYAPUR  ...         1 2025-11-09              7
+13221 2025-11-23  2025  UDAYAPUR  ...         0 2025-11-16              7
+13222 2025-11-30  2025  UDAYAPUR  ...         0 2025-11-23              7
+13223 2025-12-07  2025  UDAYAPUR  ...         0 2025-11-30              7
+
+[12920 rows x 8 columns]
+
+Weekly panel shape: (15428, 5)
+No-case ISO weeks preserved as zeros: 5556
+ISO weeks covered: 52 unique weeks
+Week range: 2021-12-27 → 2025-12-01
+Saved: /home/js/HI_LAB/dengue_project/v_05/outputs/panel_weekly.csv
+
+======================================================================
+NEPAL DENGUE INGESTION REPORT (v_05)
+======================================================================
+Files processed     : 170
+Files skipped       : 0
+Schema - simple     : 162
+Schema - wide       : 8
+Date range          : 2022-01-01 → 2025-12-07
+Districts (canonical) : 76 / 77 (excluded by choice: KASKI)
+Total snapshots     : 13,224 (incl. 304 synthetic Jan-1 baselines)
+Total incident cases: 138,595
+Negative incidents  : 0 (clamped to 0)
+Weekly panel rows   : 15,428
+
+MASS CONSERVATION (annual incident vs weekly sum by week_start year):
+  2022: incident=54,514  weekly=54,513.6  shortfall=0.4
+  2023: incident=49,687  weekly=49,687.4  shortfall=-0.4
+  2024: incident=26,718  weekly=26,777.9  shortfall=-59.9
+  2025: incident=7,676  weekly=7,615.6  shortfall=60.4
+
+INCIDENT DERIVATION: cumulative[t] - cumulative[t-1] within year.
+  Year boundary resets: a synthetic zero-cumulative snapshot is
+  injected at Jan 1 per district, so the first real snapshot keeps
+  incident = cumulative (YTD from Jan 1) and receives interval
+  Jan 1 -> snapshot date; January mass enters the weekly panel.
+
+WEEKLY REGULARIZATION: daily rate = incident / interval_days,
+  uniformly distributed across interval, then summed to ISO weeks.
+  Zero-incident intervals retained: no-case ISO weeks appear as
+  explicit zeros (5556 weeks), preserving seasonality.
+
+Saved: /home/js/HI_LAB/dengue_project/v_05/outputs/ingestion_report.txt
+
+✓ Case count ingestion complete.
+OK: 03_case_count_ingestion
+
+=== 04_bias_injection ===
++ venv/bin/python v_05/04_bias_injection.py
+Bias params: {1: {'cluster_label': 'Urban / High Surveillance', 'B1_reporting_alpha': 17.0, 'B1_reporting_beta': 3.0, 'B2_lag_shape': 1.0, 'B2_lag_scale': 1.0, 'B3_detect_alpha': 15.0, 'B3_detect_beta': 5.0}, 2: {'cluster_label': 'Peri-urban / Mid Surveillance', 'B1_reporting_alpha': 6.0, 'B1_reporting_beta': 4.0, 'B2_lag_shape': 2.5, 'B2_lag_scale': 2.0, 'B3_detect_alpha': 5.0, 'B3_detect_beta': 5.0}, 3: {'cluster_label': 'Rural / Low Surveillance', 'B1_reporting_alpha': 3.5, 'B1_reporting_beta': 6.5, 'B2_lag_shape': 3.5, 'B2_lag_scale': 4.0, 'B3_detect_alpha': 2.5, 'B3_detect_beta': 7.5}}
+Weekly panel: 15428 rows, 76 districts
+Monte Carlo draws: 100
+
+Sampled 7,600 district×draw parameter sets
+
+Sampled parameter statistics:
+  Cluster 1: B1 mean=0.841 [0.663–0.959] | B2 lag=0.02wk | B3 det=0.762 [0.611–0.893]
+  Cluster 2: B1 mean=0.601 [0.343–0.836] | B2 lag=0.70wk | B3 det=0.502 [0.259–0.745]
+  Cluster 3: B1 mean=0.350 [0.134–0.600] | B2 lag=2.01wk | B3 det=0.248 [0.067–0.486]
+
+Applying biases across 100 draws...
+  Draw 0/100...
+  Draw 25/100...
+  Draw 50/100...
+  Draw 75/100...
+  Done.
+
+Saved: biased_B1.csv, biased_B2.csv, biased_B3.csv, biased_combined.csv
+
+=== Bias Effect Summary (mean across all draws, cluster-aggregated) ===
+
+  B1:
+    Cluster 1: true=32308 | biased=27189 | attenuation=15.8%
+    Cluster 2: true=62210 | biased=37003 | attenuation=40.5%
+    Cluster 3: true=44077 | biased=15388 | attenuation=65.1%
+
+  B2:
+    Cluster 1: true=32308 | biased=32307 | attenuation=0.0%
+    Cluster 2: true=62210 | biased=62182 | attenuation=0.0%
+    Cluster 3: true=44077 | biased=43905 | attenuation=0.4%
+
+  B3:
+    Cluster 1: true=32308 | biased=24663 | attenuation=23.7%
+    Cluster 2: true=62210 | biased=31211 | attenuation=49.8%
+    Cluster 3: true=44077 | biased=10959 | attenuation=75.1%
+
+  Combined:
+    Cluster 1: true=32308 | biased=20759 | attenuation=35.7%
+    Cluster 2: true=62210 | biased=18565 | attenuation=70.2%
+    Cluster 3: true=44077 | biased=3826 | attenuation=91.3%
+
+✓ Bias injection complete.
+OK: 04_bias_injection
+
+=== 05_model_selection ===
++ venv/bin/python v_05/05_model_selection.py
+Walk-forward selection 2022-2024 only; 2025 NEVER used
+Mode=ablation | combos=54 | hidden=[4, 8, 16, 32, 64] epochs=[50, 100, 150, 200] lrs=[0.0005, 0.001, 0.005] batches=[8, 16, 32] seeds=3 folds=[2023, 2024]
+Baseline hidden sweep: epochs=150 lr=0.001 batch=16
+Ablation logic: hidden=4 optimal could be (a) underfit/training-limited or (b) data-limited/small-sample bias-variance.
+  -> s2 tests (a): does h=4 improve with more epochs/lower LR/smaller batch?
+  -> s3-s5 test (b): does larger hidden catch up when given same budget? Interaction hidden x LR/epochs/batch.
+
+
+Saved: /home/js/HI_LAB/dengue_project/v_05/outputs/05b_model_training/model_selection_walkforward.csv (324 rows, 54 combos x 2 models x 3 clusters)
+
+[1] Hidden sweep at baseline (epochs=150, lr=0.001, batch=16) -- original protocol
+  RNN: best hidden = 64 (RMSE 302.1)
+      h=  4 RMSE=  302.8
+      h=  8 RMSE=  307.3
+      h= 16 RMSE=  321.4
+      h= 32 RMSE=  336.5
+      h= 64 RMSE=  302.1
+  LSTM: best hidden = 4 (RMSE 341.9)
+      h=  4 RMSE=  341.9
+      h=  8 RMSE=  363.5
+      h= 16 RMSE=  358.1
+      h= 32 RMSE=  366.0
+      h= 64 RMSE=  368.0
+  Overall baseline: hidden=4 RMSE 322.3
+
+[2] Training sweep at hidden=4 (does h=4 improve with more budget? underfit test)
+  Best h=4 config: epochs=150 lr=0.001 batch=8 -> val RMSE 116.9 (train 552.9) vs baseline h=4 (150/0.001/16) RMSE 322.3
+  Marginal epochs: 50.0:362.1 | 100.0:339.2 | 150.0:331.4 | 200.0:328.0
+  Marginal lr: 0.0005:360.6 | 0.001:334.0 | 0.005:326.0
+  Marginal batch: 8.0:324.2 | 16.0:339.1 | 32.0:357.2
+  Gain from tuning training at h=4: 63.7% (underfit signal if >5%)
+
+[3] Interaction hidden x LR (epochs=150, batch=16)
+lr      0.0005  0.0010  0.0050
+hidden                        
+4        333.2   322.3   333.8
+8          NaN   335.4     NaN
+16       348.8   339.8   348.7
+32       350.7   351.3   354.5
+64         NaN   335.1     NaN
+  lr=0.0005: best h=4 RMSE 333.2
+  lr=0.001: best h=4 RMSE 322.3
+  lr=0.005: best h=4 RMSE 333.8
+
+[4] Interaction hidden x epochs (lr=0.001, batch=16)
+epochs    50     100    150    200
+hidden                            
+4       360.7  325.7  322.3  324.0
+8         NaN    NaN  335.4    NaN
+16      337.7  339.8  339.8  339.5
+32      351.2  351.2  351.3  351.3
+64        NaN    NaN  335.1    NaN
+  epochs=50: best h=16 RMSE 337.7
+  epochs=100: best h=4 RMSE 325.7
+  epochs=150: best h=4 RMSE 322.3
+  epochs=200: best h=4 RMSE 324.0
+
+[5] Full best config (any hidden/epochs/LR/batch)
+  Best overall: RNN h=4 epochs=150 lr=0.001 batch=8 cluster=1 -> val RMSE 116.9 train 552.9 n_params 33 best_epoch 48
+  Best per hidden (tuned training): h=64:335.1 | h=8:335.4 | h=4:340.2 | h=16:341.9 | h=32:351.2
+  -> Larger hidden wins when training tuned: supports underfit hypothesis for h=4
+
+[6] Underfit vs overfit diagnostic (train vs val RMSE gap)
+  LSTM h= 4: train 492.9 val 355.0 gap -137.9 underfit
+  RNN h= 4: train 463.1 val 325.3 gap -137.8 underfit
+  LSTM h= 8: train 460.9 val 363.5 gap -97.4 underfit
+  RNN h= 8: train 452.8 val 307.3 gap -145.6 underfit
+  LSTM h=16: train 467.6 val 358.1 gap -109.5 underfit
+  RNN h=16: train 456.8 val 325.7 gap -131.2 underfit
+  LSTM h=32: train 470.5 val 362.6 gap -107.9 underfit
+  RNN h=32: train 445.1 val 339.8 gap -105.3 underfit
+  LSTM h=64: train 490.5 val 368.0 gap -122.5 underfit
+  RNN h=64: train 444.0 val 302.1 gap -141.8 underfit
+
+Saved: /home/js/HI_LAB/dengue_project/v_05/outputs/05b_model_training/model_selection_summary.csv
+
+Overall (tuned) recommendation: hidden=64 RMSE 335.1
+Recommendation: use this hidden with its best (epochs,lr,batch) from [5]. If h=4 still best, keep it; else update 06_model_training defaults.
+Saved: /home/js/HI_LAB/dengue_project/v_05/outputs/05b_model_training/figures/fig_model_selection.png
+Saved: /home/js/HI_LAB/dengue_project/v_05/outputs/05b_model_training/figures/fig_interaction_hidden_lr.png
+Saved: /home/js/HI_LAB/dengue_project/v_05/outputs/05b_model_training/figures/fig_interaction_hidden_epochs.png
+Saved: /home/js/HI_LAB/dengue_project/v_05/outputs/05b_model_training/figures/fig_underfit_diagnostic.png
+
+[OK] Model selection (expanded) complete.
+  To test full factorial: python 05_model_selection.py --mode full --hidden 4 8 16 32 --epochs 50 100 150 200 --lrs 0.0005 0.001 0.005 --batches 8 16 32
+  To reproduce original: python 05_model_selection.py --mode hidden_only
+OK: 05_model_selection
+
+=== 06_model_training ===
++ venv/bin/python v_05/06_model_training.py

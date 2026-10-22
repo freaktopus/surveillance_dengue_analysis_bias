@@ -1,0 +1,5 @@
+run_manifest
+date_utc=2026-09-14T06:43:56Z
+python=Python 3.11.2
+git_rev=45fc37e
+order=01 02 03 04 05 06 07 08 09 10 11 panel_v01 panel_v02 13 14c 15
