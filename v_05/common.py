@@ -1,15 +1,6 @@
 """
 v_05/common.py
 ----------------
-Ported from v_02/common: centralised data loaders, models, metrics, and
-stage-1 corrections adapted for the v_05 pipeline (outputs → v_05/outputs).
-
-Leakage policy (operational arm only, no leakage):
-  - May read: cluster prior params from bias_parameters.csv,
-            biased training series from biased_B1/B2/B3/combined.csv,
-            district clusters from district_clusters.csv.
-  - MUST NOT read: clean test series (2025), per-draw TRUE rates from
-    bias_draw_params.csv, clean reference for cross-correlation lag.
 """
 
 import os
@@ -349,19 +340,31 @@ def correct_full_then_split(biased_full, n_train, cluster, bias_type, bp,
 
     Correcting train/val/test chunks independently creates artificial
     boundaries: a lag correction at the first validation week cannot see the
-    final training weeks it needs (C3 lag: mean ~2wk, max 10wk vs T_IN=8).
-    Correcting the full series preserves that cross-boundary history; the
-    split below only partitions the already-corrected values.
+    final training weeks it needs. Correcting the full series preserves that
+    cross-boundary history; the split below only partitions the
+    already-corrected values.
 
-    Leakage guard (option B): because the lag correction reads ``lag`` weeks
-    into the future (corrected[t] = observed[t + lag]), the last ``lag``
-    corrected weeks before any split boundary are built from observations on
-    the far side of that boundary. With ``trim_boundary=True`` (default) those
-    weeks are dropped: train keeps ``corr[:n_train - lag]`` and, when ``n_val``
-    is given, val keeps ``corr[n_train:n_train + n_val - lag]``. The test split
-    is always returned in full (retrospective scoring inputs). Pass
-    ``trim_boundary=False`` to restore the old untrimmed behaviour. B1/B3 have
-    lag 0, so trimming is a no-op for them.
+    The correction is anti-causal for B2/combined: ``_apply_lag`` builds
+    ``corrected[t]`` from ``observed[t + lag]``, where ``lag`` is the
+    prior-mean lag from :func:`correction_lag_weeks` (not a draw-specific
+    lag). B1/B3 are pure rescalings with ``lag == 0``.
+
+    With ``trim_boundary=True`` (the default), the last ``lag`` corrected weeks
+    before the train and validation boundaries are dropped so those rows are
+    not built from observations on the far side of a split:
+
+    - train: ``corr[:max(0, n_train - lag)]``
+    - validation, when ``n_val`` is given:
+      ``corr[n_train:n_train + max(0, n_val - lag)]``
+    - test: ``corr[n_train + n_val:]``, always returned in full
+
+    The test set is therefore NOT trimmed and every test row still reads
+    ``lag`` weeks ahead within the test period; it is a retrospective scoring
+    input, not a real-time/causal one. When ``n_val`` is None, only the train
+    boundary is trimmed and the returned rest is left untrimmed (callers that
+    need a guarded validation boundary must pass ``n_val``). For ``lag <= 0``
+    (B1/B3, or ``trim_boundary=False``) no trimming occurs and the exact split
+    is returned.
 
     `biased_full` must be the time-ordered train+test concatenation for one
     (cluster, draw). Returns (corrected_train, corrected_rest) when ``n_val``
